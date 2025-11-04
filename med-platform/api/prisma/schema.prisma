@@ -1,0 +1,49 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+enum DicomModality {
+  CR 
+  CT 
+  DX 
+  MG 
+  MR 
+  NM 
+  OT 
+  PT 
+  RF 
+  US 
+  XA
+}
+
+model Patient {
+  id         String   @id @default(uuid())
+  name       String
+  document   String   @unique
+  birthDate  DateTime
+  createdAt  DateTime @default(now())
+  updatedAt  DateTime @updatedAt
+  exams      Exam[]
+}
+
+model Exam {
+  id              String         @id @default(uuid())
+  patientId       String
+  modality        DicomModality
+  examDate        DateTime
+  idempotencyKey  String         @unique
+  createdAt       DateTime       @default(now())
+  updatedAt      DateTime       @updatedAt
+  patient         Patient        @relation(fields: [patientId], references: [id], onDelete: Cascade)
+
+  
+  // índices úteis para listagens e filtros
+  @@index([patientId, examDate])
+  @@index([modality])
+}
+
